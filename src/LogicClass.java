@@ -1,5 +1,4 @@
-import java.io.InputStream;
-import java.io.OutputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,13 +10,13 @@ import MaloW.ProcessEvent;
 public class LogicClass extends Process
 {
 	List<NetworkChannel> myClients = new ArrayList<NetworkChannel>();
-	WoLSender myWoL = new WoLSender();
 
 	public void addClient(NetworkChannel nc)
 	{
 		nc.SetNotifier(this);
 		nc.Start();
 		myClients.add(nc);
+		nc.SendData("Welcome, this is server.");
 	}
 
 	@Override
@@ -30,9 +29,18 @@ public class LogicClass extends Process
 			{
 				NetworkPacket np = (NetworkPacket)ev;
 				String msg = np.GetMessage();
-				if(msg.equals("WOL"))
+				if(msg.equals("WoL"))
 				{
-					myWoL.sendWoL();
+					WoLSender.sendWoL();
+				}
+				
+				
+				for(NetworkChannel nc: myClients)
+				{
+					if(nc.GetChannelID() == np.GetSenderID())
+					{
+						nc.SendData("Received msg: " + msg);
+					}
 				}
 			}
 		}
